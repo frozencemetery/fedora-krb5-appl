@@ -5,13 +5,12 @@
 %global login_pam_service remote
 
 # To handle upgrades from versions where we were bundled with krb5.
-%global krb5_last_bundled 1.8-3
 %global krb5_first_unbundled 1.8-4
 
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
@@ -65,7 +64,7 @@ Group: System Environment/Daemons
 Summary: Kerberos-aware telnet, ftp, rcp, rsh and rlogin servers
 Requires: xinetd
 Requires(post): /sbin/service, xinetd
-Obsoletes: krb5-workstation-servers < %{krb5_last_bundled}
+Obsoletes: krb5-workstation-servers < %{krb5_first_unbundled}
 Provides: krb5-workstation-servers = %{krb5_first_unbundled}
 
 %description servers
@@ -76,7 +75,7 @@ in most environments, they remain in use in others.
 %package clients
 Summary: Kerberos-aware telnet, ftp, rcp, rsh and rlogin clients
 Group: System Environment/Base
-Obsoletes: krb5-workstation-clients < %{krb5_last_bundled}
+Obsoletes: krb5-workstation-clients < %{krb5_first_unbundled}
 Provides: krb5-workstation-clients = %{krb5_first_unbundled}
 
 %description clients
@@ -252,6 +251,9 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Fri Mar 19 2010 Nalin Dahyabhai <nalin@redhat.com> - 1.0-2
+- also obsolete the last versions of krb5-workstation-clients and -servers
+
 * Fri Mar  5 2010 Nalin Dahyabhai <nalin@redhat.com> - 1.0-1
 - build a split-out krb5-appl package by pruning out all of the non-appl
   parts and resetting the versioning to match the upstream version for the
