@@ -1,0 +1,22 @@
+Check for pty-opening functions with the benefit of libutil, which we've
+already checked for in case it includes the pty-opening functions.  RT#6732
+
+--- krb5-appl-1.0/configure.ac
++++ krb5-appl-1.0/configure.ac
+@@ -107,6 +107,8 @@ AC_SYS_LARGEFILE
+ AC_FUNC_FSEEKO
+ AC_TYPE_LONG_LONG_INT
+ AC_TYPE_UNSIGNED_LONG_LONG_INT
++savedLIBS="$LIBS"
++LIBS="$UTIL_LIB $LIBS"
+ AC_CHECK_FUNCS(_getpty cgetent getcwd getenv gettosbyname getusershell getutmp)
+ AC_CHECK_FUNCS(getutmpx grantpt inet_aton initgroups isatty killpg killpg)
+ AC_CHECK_FUNCS(line_push logwtmp openpty ptsname revoke rmufile rresvport_af)
+@@ -114,6 +116,7 @@ AC_CHECK_FUNCS(seteuid setlogin setpgid 
+ AC_CHECK_FUNCS(setutent setutsent setutxent strsave tcgetpgrp tcsetpgrp)
+ AC_CHECK_FUNCS(ttyname unsetenv updwtmp updwtmpx utimes utmpname utmpxname)
+ AC_CHECK_FUNCS(vhangup vsnprintf waitpid)
++LIBS="$savedLIBS"
+ 
+ # Determine which functions to define in libmissing.
+ AC_REPLACE_FUNCS(daemon getdtablesize getopt herror parsetos setenv setsid)
