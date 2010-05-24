@@ -9,10 +9,10 @@
 
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
-Version: 1.0
-Release: 3%{?dist}
+Version: 1.0.1
+Release: 1%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
-# http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0-signed.tar
+# http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.1-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
 Source1: krb5-appl-%{version}.tar.gz.asc
 Source7: krb5.sh
@@ -44,8 +44,7 @@ Patch72: krb5-1.6.3-ftp_fdleak.patch
 Patch73: krb5-1.6.3-ftp_glob_runique.patch
 Patch79: krb5-trunk-ftp_mget_case.patch
 Patch88: krb5-1.7-sizeof.patch
-Patch89: krb5-appl-1.0-largefile.patch
-Patch162: krb5-appl-1.0-pty.patch
+Patch89: krb5-appl-1.0.1-largefile.patch
 
 License: MIT
 URL: http://web.mit.edu/kerberos/www/
@@ -103,7 +102,6 @@ ln -s NOTICE LICENSE
 %patch79 -p2 -b .ftp_mget_case
 %patch88 -p3 -b .sizeof
 %patch89 -p1 -b .largefile
-%patch162 -p1 -b .pty
 
 # Rename the man pages so that they'll get generated correctly.  Uses the
 # "krb5-appl-1.0-manpaths.txt" source file.
@@ -253,6 +251,9 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Mon May 24 2010 Nalin Dahyabhai <nalin@redhat.com> - 1.0.1-1
+- update to 1.0.1
+
 * Fri May 21 2010 Nalin Dahyabhai <nalin@redhat.com> - 1.0-3
 - when checking for pty-handling functions, do so with the benefit of the
   libutil library we think might include them
