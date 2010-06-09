@@ -10,7 +10,7 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.1-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
@@ -251,6 +251,10 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Wed Jun  9 2010 Nalin Dahyabhai <nalin@redhat.com> - 1.0.1-2
+- use the "pathmunge" function to add %%{krb5prefix}/bin to $PATH rather
+  than doing it the harder way ourselves (part of #544652)
+
 * Mon May 24 2010 Nalin Dahyabhai <nalin@redhat.com> - 1.0.1-1
 - update to 1.0.1
 
