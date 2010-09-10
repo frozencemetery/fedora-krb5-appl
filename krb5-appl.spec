@@ -10,7 +10,7 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.1
-Release: 2%{?dist}
+Release: 3%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.1-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
@@ -45,6 +45,7 @@ Patch73: krb5-1.6.3-ftp_glob_runique.patch
 Patch79: krb5-trunk-ftp_mget_case.patch
 Patch88: krb5-1.7-sizeof.patch
 Patch89: krb5-appl-1.0.1-largefile.patch
+Patch90: krb5-appl-1.0.1-nmax-is-ut_namesize.patch
 
 License: MIT
 URL: http://web.mit.edu/kerberos/www/
@@ -102,6 +103,7 @@ ln -s NOTICE LICENSE
 %patch79 -p2 -b .ftp_mget_case
 %patch88 -p3 -b .sizeof
 %patch89 -p1 -b .largefile
+%patch90 -p1 -b .nmax-is-ut_namesize
 
 # Rename the man pages so that they'll get generated correctly.  Uses the
 # "krb5-appl-1.0-manpaths.txt" source file.
@@ -251,6 +253,10 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Fri Sep 10 2010 Nalin Dahyabhai <nalin@redhat.com> - 1.0.1-3
+- krshd: don't limit user names to 16 chars when utmp can handle names
+  at least a bit longer than that (#611713, RT#6773)
+
 * Wed Jun  9 2010 Nalin Dahyabhai <nalin@redhat.com> - 1.0.1-2
 - use the "pathmunge" function to add %%{krb5prefix}/bin to $PATH rather
   than doing it the harder way ourselves (part of #544652)
