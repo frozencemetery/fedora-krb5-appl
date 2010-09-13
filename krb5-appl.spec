@@ -10,7 +10,7 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.1
-Release: 3%{?dist}
+Release: 4%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.1-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
@@ -253,6 +253,10 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Mon Sep 13 2010 Nalin Dahyabhai <nalin@redhat.com> - 1.0.1-4
+- revert pathmunge-related changes because pathmunge() isn't always there
+  if we've upgraded or anything weird's happened (#633212)
+
 * Fri Sep 10 2010 Nalin Dahyabhai <nalin@redhat.com> - 1.0.1-3
 - krshd: don't limit user names to 16 chars when utmp can handle names
   at least a bit longer than that (#611713, RT#6773)
