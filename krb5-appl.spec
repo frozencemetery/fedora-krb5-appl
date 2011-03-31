@@ -10,7 +10,7 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.1
-Release: 6%{?dist}
+Release: 7%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.1-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
@@ -46,6 +46,7 @@ Patch79: krb5-trunk-ftp_mget_case.patch
 Patch88: krb5-1.7-sizeof.patch
 Patch89: krb5-appl-1.0.1-largefile.patch
 Patch90: krb5-appl-1.0.1-nmax-is-ut_namesize.patch
+Patch91: krb5-appl-trunk-ftpusers.patch
 
 License: MIT
 URL: http://web.mit.edu/kerberos/www/
@@ -104,6 +105,7 @@ ln -s NOTICE LICENSE
 %patch88 -p3 -b .sizeof
 %patch89 -p1 -b .largefile
 %patch90 -p1 -b .nmax-is-ut_namesize
+%patch91 -p0 -b .ftpusers
 
 # Rename the man pages so that they'll get generated correctly.  Uses the
 # "krb5-appl-1.0-manpaths.txt" source file.
@@ -253,6 +255,10 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Thu Mar 31 2011 Nalin Dahyabhai <nalin@redhat.com> - 1.0.1-7
+- incorporate patch to correct parsing errors with "restrict" lines in
+  ftpusers (#644215, RT#6889)
+
 * Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0.1-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
