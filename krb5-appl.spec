@@ -10,7 +10,7 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.1
-Release: 7%{?dist}
+Release: 8%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.1-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
@@ -255,6 +255,11 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Wed Jun 15 2011 Nalin Dahyabhai <nalin@redhat.com> - 1.0.1-8
+- drop pam_selinux from the gssftp PAM configuration (#713459)
+- switch the PAM configurations from including system-auth to including
+  password-auth
+
 * Thu Mar 31 2011 Nalin Dahyabhai <nalin@redhat.com> - 1.0.1-7
 - incorporate patch to correct parsing errors with "restrict" lines in
   ftpusers (#644215, RT#6889)
