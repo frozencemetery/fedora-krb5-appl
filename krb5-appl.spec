@@ -10,7 +10,7 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.1
-Release: 3%{?dist}.1
+Release: 4%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.1-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
@@ -45,6 +45,7 @@ Patch73: krb5-1.6.3-ftp_glob_runique.patch
 Patch79: krb5-trunk-ftp_mget_case.patch
 Patch88: krb5-1.7-sizeof.patch
 Patch89: krb5-appl-1.0.1-largefile.patch
+Patch90: krb5-appl-1.0.1-2011-005.patch
 
 License: MIT
 URL: http://web.mit.edu/kerberos/www/
@@ -87,6 +88,7 @@ in most environments, they remain in use in others.
 %setup -q
 ln -s NOTICE LICENSE
 
+%patch90 -p1 -b .2011-005
 %patch160 -p1 -b .pam
 %patch161 -p1 -b .manpaths
 %patch3  -p3 -b .netkit-rsh
@@ -251,6 +253,10 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Tue Jul  5 2011 Nalin Dahyabhai <nalin@redhat.com> - 1.0.1-4
+- ftpd: add candidate patch to detect setegid/setregid/setresgid and check
+  for errors when calling them (MITKRB5-SA-2011-005, CVE-2011-1526, #713341)
+
 * Wed Sep 29 2010 jkeating - 1.0.1-3.1
 - Rebuilt for gcc bug 634757
 
