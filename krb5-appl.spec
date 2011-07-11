@@ -9,10 +9,10 @@
 
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
-Version: 1.0.1
-Release: 9%{?dist}
+Version: 1.0.2
+Release: 1%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
-# http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.1-signed.tar
+# http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.2-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
 Source1: krb5-appl-%{version}.tar.gz.asc
 Source7: krb5.sh
@@ -45,9 +45,6 @@ Patch73: krb5-1.6.3-ftp_glob_runique.patch
 Patch79: krb5-trunk-ftp_mget_case.patch
 Patch88: krb5-1.7-sizeof.patch
 Patch89: krb5-appl-1.0.1-largefile.patch
-Patch90: krb5-appl-1.0.1-nmax-is-ut_namesize.patch
-Patch91: krb5-appl-trunk-ftpusers.patch
-Patch92: krb5-appl-1.0.1-2011-005.patch
 
 License: MIT
 URL: http://web.mit.edu/kerberos/www/
@@ -90,7 +87,6 @@ in most environments, they remain in use in others.
 %setup -q
 ln -s NOTICE LICENSE
 
-%patch92 -p1 -b .2011-005
 %patch160 -p1 -b .pam
 %patch161 -p1 -b .manpaths
 %patch3  -p3 -b .netkit-rsh
@@ -106,8 +102,6 @@ ln -s NOTICE LICENSE
 %patch79 -p2 -b .ftp_mget_case
 %patch88 -p3 -b .sizeof
 %patch89 -p1 -b .largefile
-%patch90 -p1 -b .nmax-is-ut_namesize
-%patch91 -p0 -b .ftpusers
 
 # Rename the man pages so that they'll get generated correctly.  Uses the
 # "krb5-appl-1.0-manpaths.txt" source file.
@@ -257,6 +251,13 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Mon Jul 11 2011 Nalin Dahyabhai <nalin@redhat.com> - 1.0.2-1
+- update to 1.0.2
+  - drop patch for CVE-2011-1526, which is fixed in 1.0.2, though slightly
+    differently than in the advisory
+  - drop patch for RT#6773, included
+  - drop patch for RT#6889, included
+
 * Tue Jul  5 2011 Nalin Dahyabhai <nalin@redhat.com> - 1.0.1-9
 - ftpd: add candidate patch to detect setegid/setregid/setresgid and check
   for errors when calling them (MITKRB5-SA-2011-005, CVE-2011-1526, #713341)

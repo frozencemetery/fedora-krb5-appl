@@ -37,9 +37,9 @@ diff -up krb5-appl-1.0.1/configure.ac krb5-appl-1.0.1/configure.ac
 +AC_FUNC_FSEEKO
 +AC_TYPE_LONG_LONG_INT
 +AC_TYPE_UNSIGNED_LONG_LONG_INT
- AC_CHECK_FUNCS(_getpty cgetent getcwd getenv gettosbyname getusershell getutmp)
- AC_CHECK_FUNCS(getutmpx grantpt inet_aton initgroups isatty killpg killpg)
- AC_CHECK_FUNCS(line_push ptsname revoke rmufile rresvport_af)
+ AC_CHECK_FUNCS(_getpty cgetent getcwd getenv gethostbyname_r getservbyname_r)
+ AC_CHECK_FUNCS(gettosbyname getusershell getutmp getutmpx grantpt inet_aton)
+ AC_CHECK_FUNCS(initgroups isatty killpg killpg line_push ptsname revoke)
 diff -up krb5-appl-1.0.1/gssftp/ftpd/ftpcmd.y krb5-appl-1.0.1/gssftp/ftpd/ftpcmd.y
 --- krb5-appl-1.0.1/gssftp/ftpd/ftpcmd.y	2009-11-05 15:15:06.000000000 -0500
 +++ krb5-appl-1.0.1/gssftp/ftpd/ftpcmd.y	2010-05-24 10:16:57.688293200 -0400

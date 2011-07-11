@@ -38,8 +38,8 @@ diff -up krb5-appl-1.0/bsd/klogind.M.manpaths krb5-appl-1.0/bsd/klogind.M
  the port indicated in /etc/inetd.conf.  A typical /etc/inetd.conf
  configuration line for \fIklogind\fP might be:
  
--klogin stream tcp nowait root /usr/cygnus/sbin/klogind klogind -e5c
-+klogin stream tcp nowait root @mansbindir@/klogind klogind -e5c
+-klogin stream tcp nowait root /usr/local/sbin/klogind klogind \-e5c
++klogin stream tcp nowait root @mansbindir@/klogind klogind \-e5c
  
  When a service request is received, the following protocol is initiated:
  
@@ -50,7 +50,7 @@ diff -up krb5-appl-1.0/bsd/kshd.M.manpaths krb5-appl-1.0/bsd/kshd.M
  .SH NAME
  kshd \- kerberized remote shell server
  .SH SYNOPSIS
--.B /usr/local/sbin/kshd 
+-.B kshd 
 +.B @mansbindir@/kshd 
  [
  .B \-kr45ec
@@ -90,7 +90,7 @@ diff -up krb5-appl-1.0/gssftp/ftpd/ftpd.M.manpaths krb5-appl-1.0/gssftp/ftpd/ftp
  .SH SYNOPSIS
 -.B ftpd
 +.B @mansbindir@/ftpd
- [\fB\-A \fP|\fB -a\fP] [\fB\-C\fP] [\fB\-c\fP] [\fB\-d\fP] [\fB-E\fP]
+ [\fB\-A \fP|\fB\-a\fP] [\fB\-C\fP] [\fB\-c\fP] [\fB\-d\fP] [\fB\-E\fP]
  [\fB\-l\fP] [\fB\-v\fP] [\fB\-T\fP \fImaxtimeout\fP] [\fB\-t\fP \fItimeout\fP]
  [\fB\-p\fP \fIport\fP] [\fB\-U\fP \fIftpusers-file\fP] [\fB\-u\fP \fIumask\fP]
 diff -up krb5-appl-1.0/telnet/telnetd/telnetd.8.manpaths krb5-appl-1.0/telnet/telnetd/telnetd.8
@@ -100,7 +100,7 @@ diff -up krb5-appl-1.0/telnet/telnetd/telnetd.8.manpaths krb5-appl-1.0/telnet/te
  .SM DARPA TELNET
  protocol server
  .SH SYNOPSIS
--.B /usr/libexec/telnetd
+-.B telnetd
 +.B @mansbindir@/telnetd
  [\fB\-a\fP \fIauthmode\fP] [\fB\-B\fP] [\fB\-D\fP] [\fIdebugmode\fP]
  [\fB\-e\fP] [\fB\-h\fP] [\fB\-I\fP\fIinitid\fP] [\fB\-l\fP]
