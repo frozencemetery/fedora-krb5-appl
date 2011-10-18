@@ -66,7 +66,7 @@ diff -up krb5-appl-1.0.1/gssftp/ftp/domacro.c krb5-appl-1.0.1/gssftp/ftp/domacro
  	extern char **glob();
  	struct cmd *getcmd(), *c;
  
-@@ -72,8 +74,17 @@ void domacro(argc, argv)
+@@ -72,8 +74,18 @@ void domacro(argc, argv)
  		code = -1;
  		return;
  	}
@@ -83,6 +83,7 @@ diff -up krb5-appl-1.0.1/gssftp/ftp/domacro.c krb5-appl-1.0.1/gssftp/ftp/domacro
 +		code = -1;
 +		return;
 +	}
++	memcpy(line, saved, saved_len);
  TOP:
  	cp1 = macros[i].mac_start;
  	while (cp1 != macros[i].mac_end) {
@@ -116,18 +117,25 @@ diff -up krb5-appl-1.0.1/gssftp/ftp/domacro.c krb5-appl-1.0.1/gssftp/ftp/domacro
  					   cp2 += strlen(argv[count]);
  					}
  					break;
-@@ -148,8 +159,9 @@ TOP:
+@@ -148,8 +160,7 @@
  			if (bell && c->c_bell) {
  				(void) putchar('\007');
  			}
 -			(void) strncpy(line, line2, sizeof(line) - 1);
 -			line[sizeof(line) - 1] = '\0';
-+			free(line);
-+			line_len = saved_len;
-+			line = saved;
++			memcpy(line, saved, saved_len);
  			makeargv();
  			argc = margc;
  			argv = margv;
+@@ -161,4 +172,8 @@
+ 	if (loopflg && ++count < argc) {
+ 		goto TOP;
+ 	}
++	free(line);
++	line_len = saved_len;
++	line = saved;
++	makeargv();
+ }
 diff -up krb5-appl-1.0.1/gssftp/ftp/ftp.c krb5-appl-1.0.1/gssftp/ftp/ftp.c
 --- krb5-appl-1.0.1/gssftp/ftp/ftp.c	2011-04-27 12:31:52.684639442 -0400
 +++ krb5-appl-1.0.1/gssftp/ftp/ftp.c	2011-04-27 12:31:52.702639442 -0400
