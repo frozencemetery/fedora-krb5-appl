@@ -10,7 +10,7 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.2-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
