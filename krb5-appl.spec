@@ -47,6 +47,7 @@ Patch88: krb5-1.7-sizeof.patch
 Patch89: krb5-appl-1.0.1-largefile.patch
 Patch90: krb5-appl-1.0.1-nmax-is-ut_namesize.patch
 Patch91: krb5-appl-1.0.1-2011-005.patch
+Patch92: http://web.mit.edu/kerberos/advisories/2011-008-patch.txt
 
 License: MIT
 URL: http://web.mit.edu/kerberos/www/
@@ -106,6 +107,7 @@ ln -s NOTICE LICENSE
 %patch88 -p3 -b .sizeof
 %patch89 -p1 -b .largefile
 %patch90 -p1 -b .nmax-is-ut_namesize
+%patch92 -p1 -b .2011-008
 
 # Rename the man pages so that they'll get generated correctly.  Uses the
 # "krb5-appl-1.0-manpaths.txt" source file.
@@ -255,6 +257,9 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Tue Dec 27 2011 Nalin Dahyabhai <nalin@redhat.com> - 1.0.2-2
+- add upstream patch for telnetd buffer overflow (CVE-2011-4862, #770325)
+
 * Tue Jul  5 2011 Nalin Dahyabhai <nalin@redhat.com> - 1.0.1-7
 - ftpd: add candidate patch to detect setegid/setregid/setresgid and check
   for errors when calling them (MITKRB5-SA-2011-005, CVE-2011-1526, #713341)
