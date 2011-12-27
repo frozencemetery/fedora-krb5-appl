@@ -10,7 +10,7 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.1
-Release: 7%{?dist}
+Release: 8%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.1-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
@@ -257,7 +257,7 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
-* Tue Dec 27 2011 Nalin Dahyabhai <nalin@redhat.com> - 1.0.2-2
+* Tue Dec 27 2011 Nalin Dahyabhai <nalin@redhat.com> - 1.0.1-8
 - add upstream patch for telnetd buffer overflow (CVE-2011-4862, #770325)
 
 * Tue Jul  5 2011 Nalin Dahyabhai <nalin@redhat.com> - 1.0.1-7
