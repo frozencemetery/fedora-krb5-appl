@@ -10,7 +10,7 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.2
-Release: 3%{?dist}
+Release: 4%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.2-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
@@ -46,6 +46,7 @@ Patch79: krb5-trunk-ftp_mget_case.patch
 Patch88: krb5-1.7-sizeof.patch
 Patch89: krb5-appl-1.0.1-largefile.patch
 Patch92: http://web.mit.edu/kerberos/advisories/2011-008-patch.txt
+Patch93: krb5-appl-ftp-mdir.patch
 
 License: MIT
 URL: http://web.mit.edu/kerberos/www/
@@ -104,6 +105,7 @@ ln -s NOTICE LICENSE
 %patch88 -p3 -b .sizeof
 %patch89 -p1 -b .largefile
 %patch92 -p1 -b .2011-008
+%patch93 -p1 -b .mdir
 
 # Rename the man pages so that they'll get generated correctly.  Uses the
 # "krb5-appl-1.0-manpaths.txt" source file.
@@ -253,6 +255,11 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Mon Jan 23 2012 Nalin Dahyabhai <nalin@redhat.com> - 1.0.2-4
+- add Siddhesh Poyarekar's patch to ensure that when performing an "mdir"
+  or "mls" operation, that the FTP client always passes an actually-terminated
+  string as the open mode for fopen() (#773538, RT#7079)
+
 * Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0.2-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
