@@ -10,7 +10,7 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.2
-Release: 4%{?dist}
+Release: 5%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.2-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
@@ -255,6 +255,9 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Thu Jul 19 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0.2-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
 * Mon Jan 23 2012 Nalin Dahyabhai <nalin@redhat.com> - 1.0.2-4
 - add Siddhesh Poyarekar's patch to ensure that when performing an "mdir"
   or "mls" operation, that the FTP client always passes an actually-terminated
