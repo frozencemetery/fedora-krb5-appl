@@ -1,0 +1,9 @@
+[Unit]
+Description=Encrypting Kerberos-aware Rlogin Server Activation Socket
+
+[Socket]
+ListenStream=2105
+Accept=true
+
+[Install]
+WantedBy=sockets.target

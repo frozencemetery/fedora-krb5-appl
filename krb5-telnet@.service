@@ -1,0 +1,7 @@
+[Unit]
+Description=Kerberos-aware Telnet Server
+After=local-fs.target
+
+[Service]
+ExecStart=/usr/kerberos/sbin/telnetd
+StandardInput=socket

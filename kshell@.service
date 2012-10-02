@@ -1,0 +1,7 @@
+[Unit]
+Description=Kerberos-aware Rshell Server
+After=local-fs.target
+
+[Service]
+ExecStart=/usr/kerberos/sbin/kshd
+StandardInput=socket

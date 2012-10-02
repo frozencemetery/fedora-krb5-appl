@@ -1,0 +1,9 @@
+[Unit]
+Description=Encrypted Kerberos-aware Rshell Server Activation Socket
+
+[Socket]
+ListenStream=544
+Accept=true
+
+[Install]
+WantedBy=sockets.target

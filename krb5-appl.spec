@@ -7,28 +7,42 @@
 # To handle upgrades from versions where we were bundled with krb5.
 %global krb5_first_unbundled 1.8-4
 
+# To handle upgrades from versions where we supplied xinetd configuration.
+%global krb5_first_systemd 1.0.3-1
+
+# The services and sockets in this package.
+%global services eklogin klogin ekshell kshell ekrb5-telnet krb5-telnet gssftp
+
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
-Version: 1.0.2
-Release: 5%{?dist}
+Version: 1.0.3
+Release: 1%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
-# http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.2-signed.tar
+# http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.3-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
 Source1: krb5-appl-%{version}.tar.gz.asc
 Source7: krb5.sh
 Source8: krb5.csh
 Source12: krsh
 Source13: krlogin
-Source14: eklogin.xinetd
-Source15: klogin.xinetd
-Source16: kshell.xinetd
-Source17: krb5-telnet.xinetd
-Source18: gssftp.xinetd
-Source22: ekrb5-telnet.xinetd
+Source14: eklogin.socket
+Source15: eklogin@.service
+Source16: klogin.socket
+Source17: klogin@.service
+Source18: kshell.socket
+Source19: kshell@.service
+Source20: krb5-telnet.socket
+Source21: krb5-telnet@.service
+Source22: gssftp.socket
+Source23: gssftp@.service
+Source24: ekrb5-telnet.socket
+Source25: ekrb5-telnet@.service
+Source26: ekshell.socket
+Source27: ekshell@.service
 Source125: krb5-appl-1.0-manpaths.txt
-Source26: gssftp.pamd
-Source27: kshell.pamd
-Source28: ekshell.pamd
+Source28: gssftp.pamd
+Source29: kshell.pamd
+Source30: ekshell.pamd
 
 Patch3: krb5-1.3-netkit-rsh.patch
 Patch4: krb5-appl-1.0-rlogind-environ.patch
@@ -45,8 +59,8 @@ Patch73: krb5-1.6.3-ftp_glob_runique.patch
 Patch79: krb5-trunk-ftp_mget_case.patch
 Patch88: krb5-1.7-sizeof.patch
 Patch89: krb5-appl-1.0.1-largefile.patch
-Patch92: http://web.mit.edu/kerberos/advisories/2011-008-patch.txt
 Patch93: krb5-appl-ftp-mdir.patch
+Patch94: krb5-appl-1.0.3-debuginfo.patch
 
 License: MIT
 URL: http://web.mit.edu/kerberos/www/
@@ -55,6 +69,11 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: autoconf, bison, flex, gawk
 BuildRequires: gzip, ncurses-devel, rsh, texinfo, texinfo-tex, tar
 BuildRequires: krb5-devel, pam-devel
+Requires: systemd-units
+Requires(post): systemd-units
+Requires(post): systemd-sysv
+Requires(preun): systemd-units
+Requires(postun): systemd-units
 
 %description
 This package contains Kerberos-aware versions of the telnet, ftp, rcp, rsh,
@@ -64,8 +83,6 @@ such as OpenSSH in most environments, they remain in use in others.
 %package servers
 Group: System Environment/Daemons
 Summary: Kerberos-aware telnet, ftp, rcp, rsh and rlogin servers
-Requires: xinetd
-Requires(post): /sbin/service, xinetd
 Obsoletes: krb5-workstation-servers < %{krb5_first_unbundled}
 Provides: krb5-workstation-servers = %{krb5_first_unbundled}
 
@@ -92,6 +109,7 @@ ln -s NOTICE LICENSE
 %patch160 -p1 -b .pam
 %patch161 -p1 -b .manpaths
 %patch3  -p3 -b .netkit-rsh
+# Is this next one still needed if systemd is launching rlogind?
 %patch4  -p1 -b .rlogind-environ
 %patch11 -p3 -b .passive
 %patch14 -p3 -b .ftp-glob
@@ -104,8 +122,8 @@ ln -s NOTICE LICENSE
 %patch79 -p2 -b .ftp_mget_case
 %patch88 -p3 -b .sizeof
 %patch89 -p1 -b .largefile
-%patch92 -p1 -b .2011-008
 %patch93 -p1 -b .mdir
+%patch94 -p1 -b .debuginfo
 
 # Rename the man pages so that they'll get generated correctly.  Uses the
 # "krb5-appl-1.0-manpaths.txt" source file.
@@ -118,6 +136,10 @@ autoheader
 autoconf
 
 %build
+# In case we're being built on a system where we're installed, try to ensure
+# that the configure script finds the non-encrypted versions of rsh and rlogin
+# to record as the fallback paths.
+PATH="/usr/bin:/usr/sbin:$PATH"
 # Build everything position-independent.
 INCLUDES=-I%{_includedir}/et
 CFLAGS="`echo $RPM_OPT_FLAGS $DEFINES $INCLUDES -fPIE -fno-strict-aliasing`"
@@ -150,25 +172,33 @@ for subpackage in clients servers ; do
 	$RPM_BUILD_ROOT/etc/profile.d/krb5-appl-$subpackage.csh
 done
 
-# Xinetd configuration files.
-mkdir -p $RPM_BUILD_ROOT/etc/xinetd.d/
-for xinetd in \
+# systemd configuration files
+mkdir -p $RPM_BUILD_ROOT/%{_unitdir}
+for unit in \
 	%{SOURCE14} \
 	%{SOURCE15} \
 	%{SOURCE16} \
 	%{SOURCE17} \
 	%{SOURCE18} \
-	%{SOURCE22} ; do
-	install -pm 644 ${xinetd} \
-	$RPM_BUILD_ROOT/etc/xinetd.d/`basename ${xinetd} .xinetd`
+	%{SOURCE19} \
+	%{SOURCE20} \
+	%{SOURCE21} \
+	%{SOURCE22} \
+	%{SOURCE23} \
+	%{SOURCE24} \
+	%{SOURCE25} \
+	%{SOURCE26} \
+	%{SOURCE27} ; do
+	install -pm 644 ${unit} \
+	$RPM_BUILD_ROOT/%{_unitdir}
 done
 
 # PAM configuration files.
 mkdir -p $RPM_BUILD_ROOT/etc/pam.d/
 for pam in \
-	%{SOURCE26} \
-	%{SOURCE27} \
-	%{SOURCE28} ; do
+	%{SOURCE28} \
+	%{SOURCE29} \
+	%{SOURCE30} ; do
 	install -pm 644 ${pam} \
 	$RPM_BUILD_ROOT/etc/pam.d/`basename ${pam} .pamd`
 done
@@ -179,11 +209,26 @@ make DESTDIR=$RPM_BUILD_ROOT install
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
 
 %post servers
-/sbin/service xinetd reload > /dev/null 2>&1 || :
+for service in %{services} ; do
+	%systemd_post "$service"@.service "$service".socket
+done
+exit 0
+
+%preun servers
+for service in %{services} ; do
+	%systemd_preun "$service"@.service "$service".socket
+done
+exit 0
+
+%triggerun servers -- krb5-appl-servers < %{krb5_first_systemd}
+/bin/systemctl reload-or-try-restart xinetd.service > /dev/null 2>&1 || :
+/bin/systemctl daemon-reload > /dev/null 2>&1 || :
 exit 0
 
 %postun servers
-/sbin/service xinetd reload > /dev/null 2>&1 || :
+for service in %{services} ; do
+	%systemd_postun "$service"@.service "$service".socket
+done
 exit 0
 
 %files clients
@@ -235,7 +280,7 @@ exit 0
 %{krb5prefix}/bin/rcp
 %{krb5prefix}/man/man1/rcp.1*
 
-%config(noreplace) /etc/xinetd.d/*
+%config(noreplace) %{_unitdir}/*
 %config(noreplace) /etc/pam.d/kshell
 %config(noreplace) /etc/pam.d/ekshell
 %config(noreplace) /etc/pam.d/gssftp
@@ -255,6 +300,20 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Tue Oct 10 2012 Nalin Dahyabhai <nalin@redhat.com> - 1.0.3-1
+- update to 1.0.3
+  - drop patch for CVE-2011-4862, included upstream
+- switch from installing control files for xinetd to installing control
+  files for systemd (#737667)
+  NOTE: while kshell.xinetd used to specify that encryption was always
+  required, we now provide both kshell.socket (encryption not required) and
+  ekshell.socket (encryption always required) to make the naming consistent
+  with klogin.socket and eklogin.socket
+- override the default build rules to not delete temporary y.tab.c files,
+  so that they can be packaged, allowing debuginfo files which point to them
+  do so usefully (as in #729044)
+- use systemd macros, since we're doing the systemd conversion for F18
+
 * Thu Jul 19 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0.2-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 

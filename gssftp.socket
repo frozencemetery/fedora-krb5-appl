@@ -1,0 +1,9 @@
+[Unit]
+Description=Kerberos-aware FTP Server Activation Socket
+
+[Socket]
+ListenStream=21
+Accept=true
+
+[Install]
+WantedBy=sockets.target

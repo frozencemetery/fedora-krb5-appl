@@ -1,0 +1,7 @@
+[Unit]
+Description=Kerberos-aware FTP Server
+After=local-fs.target
+
+[Service]
+ExecStart=/usr/kerberos/sbin/ftpd -l -a
+StandardInput=socket

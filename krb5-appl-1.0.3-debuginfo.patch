@@ -1,0 +1,11 @@
+--- krb5-appl/gssftp/ftpd/Makefile.in
++++ krb5-appl/gssftp/ftpd/Makefile.in
+@@ -46,7 +46,7 @@ install::
+ ftpcmd.c: $(srcdir)/ftpcmd.y
+ 	$(RM) ftpcmd.c y.tab.c
+ 	$(YACC) $(srcdir)/ftpcmd.y
+-	$(MV) y.tab.c ftpcmd.c
++	$(LN) y.tab.c ftpcmd.c
+ 
+ glob.o: $(srcdir)/../ftp/glob.c
+ 	$(CC) -c $(ALL_CFLAGS) $(srcdir)/../ftp/glob.c

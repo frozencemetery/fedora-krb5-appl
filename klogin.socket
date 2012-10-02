@@ -1,0 +1,9 @@
+[Unit]
+Description=Kerberos-aware Rlogin Server Activation Socket
+
+[Socket]
+ListenStream=543
+Accept=true
+
+[Install]
+WantedBy=sockets.target

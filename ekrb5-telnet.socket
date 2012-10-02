@@ -1,0 +1,9 @@
+[Unit]
+Description=Encrypting Kerberos-aware Telnet Server Activation Socket
+
+[Socket]
+ListenStream=23
+Accept=true
+
+[Install]
+WantedBy=sockets.target
