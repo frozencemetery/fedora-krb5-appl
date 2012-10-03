@@ -61,6 +61,7 @@ Patch88: krb5-1.7-sizeof.patch
 Patch89: krb5-appl-1.0.1-largefile.patch
 Patch93: krb5-appl-ftp-mdir.patch
 Patch94: krb5-appl-1.0.3-debuginfo.patch
+Patch95: krb5-appl-1.0.3-libc.patch
 
 License: MIT
 URL: http://web.mit.edu/kerberos/www/
@@ -124,6 +125,7 @@ ln -s NOTICE LICENSE
 %patch89 -p1 -b .largefile
 %patch93 -p1 -b .mdir
 %patch94 -p1 -b .debuginfo
+%patch95 -p1 -b .libc
 
 # Rename the man pages so that they'll get generated correctly.  Uses the
 # "krb5-appl-1.0-manpaths.txt" source file.
@@ -300,7 +302,10 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
-* Tue Oct 10 2012 Nalin Dahyabhai <nalin@redhat.com> - 1.0.3-1
+* Wed Oct 10 2012 Nalin Dahyabhai <nalin@redhat.com> - 1.0.3-1
+- patch around compilation failure with newer libc
+
+* Tue Oct  9 2012 Nalin Dahyabhai <nalin@redhat.com>
 - update to 1.0.3
   - drop patch for CVE-2011-4862, included upstream
 - switch from installing control files for xinetd to installing control
