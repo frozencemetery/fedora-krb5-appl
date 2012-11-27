@@ -16,7 +16,7 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.3
-Release: 1%{?dist}
+Release: 2%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.3-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
@@ -68,7 +68,7 @@ URL: http://web.mit.edu/kerberos/www/
 Group: Applications/Internet
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: autoconf, bison, flex, gawk
-BuildRequires: gzip, ncurses-devel, rsh, texinfo, texinfo-tex, tar
+BuildRequires: gzip, ncurses-devel, rsh, tar
 BuildRequires: krb5-devel, pam-devel
 Requires: systemd-units
 Requires(post): systemd-units
@@ -302,6 +302,10 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Tue Nov 27 2012 Nalin Dahyabhai <nalin@redhat.com> - 1.0.3-2
+- drop build requirements on tex and texinfo, not needed since the split
+  from the main krb5 package
+
 * Wed Oct 10 2012 Nalin Dahyabhai <nalin@redhat.com> - 1.0.3-1
 - patch around compilation failure with newer libc
 
