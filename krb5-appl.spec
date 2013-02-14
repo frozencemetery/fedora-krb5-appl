@@ -16,7 +16,7 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.3
-Release: 2%{?dist}
+Release: 3%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.3-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
@@ -302,6 +302,9 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0.3-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
 * Tue Nov 27 2012 Nalin Dahyabhai <nalin@redhat.com> - 1.0.3-2
 - drop build requirements on tex and texinfo, not needed since the split
   from the main krb5 package
