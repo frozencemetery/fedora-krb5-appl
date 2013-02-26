@@ -16,7 +16,7 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.3
-Release: 3%{?dist}
+Release: 4%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.3-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
@@ -145,7 +145,7 @@ PATH="/usr/bin:/usr/sbin:$PATH"
 # Build everything position-independent.
 INCLUDES=-I%{_includedir}/et
 CFLAGS="`echo $RPM_OPT_FLAGS $DEFINES $INCLUDES -fPIE -fno-strict-aliasing`"
-LDFLAGS="-pie"
+LDFLAGS="-pie -Wl,-z,relro,-z,now"
 %configure \
 	CFLAGS="$CFLAGS" \
 	LDFLAGS="$LDFLAGS" \
@@ -302,6 +302,9 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Tue Feb 26 2013 Nalin Dahyabhai <nalin@redhat.com> 1.0.3-4
+- link with early binding (internal tooling, #884066)
+
 * Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0.3-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
