@@ -238,8 +238,8 @@ exit 0
 %doc README NOTICE LICENSE
 %docdir %{krb5prefix}/man
 
-%config(noreplace) /etc/profile.d/krb5-appl-clients.sh
-%config(noreplace) /etc/profile.d/krb5-appl-clients.csh
+/etc/profile.d/krb5-appl-clients.sh
+/etc/profile.d/krb5-appl-clients.csh
 
 %dir %{krb5prefix}
 %dir %{krb5prefix}/bin
@@ -268,8 +268,8 @@ exit 0
 %doc README NOTICE LICENSE
 %docdir %{krb5prefix}/man
 
-%config(noreplace) /etc/profile.d/krb5-appl-servers.sh
-%config(noreplace) /etc/profile.d/krb5-appl-servers.csh
+/etc/profile.d/krb5-appl-servers.sh
+/etc/profile.d/krb5-appl-servers.csh
 
 %dir %{krb5prefix}
 %dir %{krb5prefix}/bin
@@ -304,6 +304,7 @@ exit 0
 %changelog
 * Tue Feb 26 2013 Nalin Dahyabhai <nalin@redhat.com> 1.0.3-4
 - link with early binding (internal tooling, #884066)
+- stop tagging profile.d scriptlets as %%config(noreplace) (more of #884066)
 
 * Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0.3-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
