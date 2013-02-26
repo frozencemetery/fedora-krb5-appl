@@ -282,7 +282,7 @@ exit 0
 %{krb5prefix}/bin/rcp
 %{krb5prefix}/man/man1/rcp.1*
 
-%config(noreplace) %{_unitdir}/*
+%{_unitdir}/*
 %config(noreplace) /etc/pam.d/kshell
 %config(noreplace) /etc/pam.d/ekshell
 %config(noreplace) /etc/pam.d/gssftp
@@ -305,6 +305,7 @@ exit 0
 * Tue Feb 26 2013 Nalin Dahyabhai <nalin@redhat.com> 1.0.3-4
 - link with early binding (internal tooling, #884066)
 - stop tagging profile.d scriptlets as %%config(noreplace) (more of #884066)
+- also don't tag the unit files as a configuration files (more #884066)
 
 * Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0.3-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
