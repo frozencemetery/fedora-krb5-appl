@@ -284,7 +284,7 @@ exit 0
 %{krb5prefix}/bin/rcp
 %{krb5prefix}/man/man1/rcp.1*
 
-%{_unitdir}/*
+/%{_unitdir}/*
 %config(noreplace) /etc/pam.d/kshell
 %config(noreplace) /etc/pam.d/ekshell
 %config(noreplace) /etc/pam.d/gssftp
@@ -307,6 +307,7 @@ exit 0
 * Tue Jul 30 2013 Nalin Dahyabhai <nalin@redhat.com> 1.0.3-5
 - pull up proposed change to remove the limit on the size of an input line
   in the FTP client (based on #665833)
+- make sure that the unit file path is an absolute path (build tooling)
 
 * Tue Feb 26 2013 Nalin Dahyabhai <nalin@redhat.com> 1.0.3-4
 - link with early binding (internal tooling, #884066)

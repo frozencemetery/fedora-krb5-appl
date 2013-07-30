@@ -1,0 +1,238 @@
+Unfinished, untested.  Currently here so that I don't lose it.
+
+diff -up krb5-appl-1.0.3/aclocal.m4.selinux krb5-appl-1.0.3/aclocal.m4
+--- krb5-appl-1.0.3/aclocal.m4.selinux	2012-10-08 21:31:12.781454483 -0400
++++ krb5-appl-1.0.3/aclocal.m4	2012-10-08 21:31:38.876725487 -0400
+@@ -565,6 +565,33 @@ AC_SUBST(PAM_LIBS)
+ AC_SUBST(PAM_MAN)
+ AC_SUBST(NON_PAM_MAN)
+ ])dnl
++
++dnl
++dnl Use SELinux to label directories that we create for storing ccaches.
++dnl 
++AC_DEFUN(KRB5_WITH_SELINUX,[
++AC_ARG_WITH(selinux,[AC_HELP_STRING(--with-selinux,[compile with SELinux support])],
++	    withselinux="$withval",withselinux=auto)
++old_LIBS="$LIBS"
++if test x$withselinux != xno ; then
++	AC_MSG_RESULT([checking for SELinux...])
++	AC_CHECK_LIB(selinux,setfscreatecon)
++	if test x$ac_cv_lib_selinux_setfscreatecon != xyes ; then
++		if test x$withselinux = xyes ; then
++			AC_MSG_ERROR([Unable to find libselinux.])
++		else
++			AC_MSG_RESULT([Unable to locate security/pam_appl.h.])
++		fi
++	else
++		AC_DEFINE_UNQUOTED(USE_SELINUX,1,[Define to support SELinux.])
++		SELINUX_LIBS="$LIBS"
++	fi
++fi
++AC_SUBST(SELINUX_LIBS)
++LIBS="$old_LIBS"
++])dnl
++
++
+ AC_DEFUN(V5_AC_OUTPUT_MANPAGE,[
+ mansysconfdir=$sysconfdir
+ mansysconfdir=`eval echo $mansysconfdir | sed -e "s,NONE,$prefix,g"`
+diff -up krb5-appl-1.0.3/gssftp/ftpd/Makefile.in.selinux krb5-appl-1.0.3/gssftp/ftpd/Makefile.in
+--- krb5-appl-1.0.3/gssftp/ftpd/Makefile.in.selinux	2012-10-08 21:20:34.328643989 -0400
++++ krb5-appl-1.0.3/gssftp/ftpd/Makefile.in	2012-10-08 21:21:29.338243912 -0400
+@@ -7,6 +7,7 @@ PROG_RPATH=$(KRB5_LIBDIR)
+ 
+ FTPD_LIBS=@FTPD_LIBS@
+ PAM_LIBS=@PAM_LIBS@
++SELINUX_LIBS=@SELINUX_LIBS@
+ 
+ SRCS	= $(srcdir)/ftpd.c ftpcmd.c $(srcdir)/popen.c \
+ 	  $(srcdir)/vers.c \
+@@ -23,7 +24,7 @@ LOCALINCLUDES = -I$(srcdir)/.. -I$(srcdi
+ all::	ftpd
+ 
+ ftpd:	$(OBJS) $(PTY_DEPLIB) $(MISSING_DEPLIB)
+-	$(CC_LINK) -o $@ $(OBJS) $(FTPD_LIBS) $(PTY_LIB) $(UTIL_LIB) $(MISSING_LIB) $(GSS_LIBS) $(PAM_LIBS) $(LIBS)
++	$(CC_LINK) -o $@ $(OBJS) $(FTPD_LIBS) $(PTY_LIB) $(UTIL_LIB) $(MISSING_LIB) $(GSS_LIBS) $(PAM_LIBS) $(SELINUX_LIBS) $(LIBS)
+ 
+ generate-files-mac: ftpcmd.c
+ 
+diff -up krb5-appl-1.0.3/gssftp/ftpd/ftpd.c.ccmove krb5-appl-1.0.3/gssftp/ftpd/ftpd.c
+--- krb5-appl-1.0.3/gssftp/ftpd/ftpd.c.ccmove	2012-10-08 18:04:31.822474951 -0400
++++ krb5-appl-1.0.3/gssftp/ftpd/ftpd.c	2012-10-08 21:32:51.160504829 -0400
+@@ -135,6 +135,12 @@ gss_buffer_desc client_name;
+ krb5_context kcontext;
+ krb5_ccache ccache;
+
++#ifdef USE_SELINUX
++#include <selinux/selinux.h>
++#include <selinux/context.h>
++#endif
++#define MCCNAME "MEMORY:fwded"
++
+ static void ftpd_gss_convert_creds(char *name, gss_cred_id_t);
+ static int ftpd_gss_userok(gss_buffer_t, char *name);
+ 
+@@ -902,8 +906,7 @@ char *name, *passwd;
+ 		return 0;
+ 	my_creds.client = me;
+ 
+-	snprintf(ccname, sizeof(ccname), "FILE:/tmp/krb5cc_ftpd%ld",
+-		 (long) getpid());
++	snprintf(ccname, sizeof(ccname), MCCNAME);
+ 	if (krb5_cc_resolve(kcontext, ccname, &ccache))
+ 		return(0);
+ 	if (krb5_cc_initialize(kcontext, ccache, me))
+@@ -1032,6 +1035,128 @@ pass(passwd)
+ 	return;
+ }
+ 
++#ifdef GSSAPI
++static void
++set_fscreatecon_for_dir(const char *path, mode_t perms)
++{
++#ifdef USE_SELINUX
++	security_context_t configuredsc, currentsc, derivedsc;
++	context_t current, derived;
++	const char *seuser;
++
++	configuredsc = NULL;
++	currentsc = NULL;
++	derivedsc = NULL;
++	if (path != NULL) {
++		if ((matchpathcon(path, perms, &configuredsc) == 0) &&
++		    (getcon(&currentsc) == 0)) {
++			derived = context_new(configuredsc);
++			if (derived != NULL) {
++				current = context_new(currentsc);
++				if (current != NULL) {
++					seuser = context_user_get(current);
++					if (seuser != NULL) {
++						context_user_set(derived,
++								 seuser);
++					}
++					derivedsc = context_str(derived);
++					setfscreatecon(derivedsc);
++					context_free(current);
++				}
++				context_free(derived);
++			}
++		} else {
++			setfscreatecon(NULL);
++		}
++		freecon(configuredsc);
++		freecon(currentsc);
++	} else {
++		setfscreatecon(NULL);
++	}
++#endif
++}
++static krb5_error_code
++make_dir(const char *path, uid_t uid, gid_t gid, mode_t perms)
++{
++	krb5_error_code ret;
++	set_fscreatecon_for_dir(path, perms);
++	ret = mkdir(path, perms);
++	set_fscreatecon_for_dir(NULL, 0);
++	if ((ret == -1) && (errno == EEXIST)) {
++		return 0;
++	}
++	if (ret == 0) {
++		ret = chown(path, uid, gid);
++	}
++	return ret ? errno : 0;
++}
++static krb5_error_code
++ensure_parent_dir(krb5_ccache cache, uid_t uid, gid_t gid)
++{
++	char ccdir[MAXPATHLEN];
++	struct stat st;
++	const char *path;
++	krb5_error_code ret;
++
++	path = krb5_cc_get_name(kcontext, cache);
++	if (path == NULL)
++		return 0;
++	if (strncmp(path, "/run/user/", 10) == 0) {
++		if ((stat("/run", &st) == -1) && (errno == ENOENT)) {
++			if ((ret = make_dir("/run", uid, gid,
++					    S_IRWXU |
++					    S_IRGRP | S_IXGRP |
++					    S_IROTH | S_IXOTH)) != 0) {
++				return ret;
++			}
++		}
++		if ((stat("/run/user", &st) == -1) && (errno == ENOENT)) {
++			if ((ret = make_dir("/run/user", uid, gid,
++					    S_IRWXU |
++					    S_IRGRP | S_IXGRP |
++					    S_IROTH | S_IXOTH)) != 0) {
++				return ret;
++			}
++		}
++		snprintf(ccdir, sizeof(ccdir), "/run/user/%lu",
++			 (unsigned long)uid);
++		if ((stat(ccdir, &st) == -1) && (errno == ENOENT)) {
++			if ((ret = make_dir(ccdir, uid, gid, S_IRWXU)) != 0) {
++				return ret;
++			}
++		}
++	}
++	return 0;
++}
++static krb5_error_code
++make_user_ccache(krb5_ccache *cache, uid_t uid, gid_t gid, const char *middle,
++		 pid_t pid)
++{
++	char ccname[MAXPATHLEN];
++	krb5_ccache new_cache;
++	krb5_principal me;
++	krb5_error_code ret;
++
++	snprintf(ccname, sizeof(ccname), "FILE:/run/user/%lu/krb5cc_%s%ld",
++		 (unsigned long)uid, middle, (long)pid);
++	if ((ret = krb5_cc_get_principal(kcontext, *cache, &me)) != 0)
++		return ret;
++	if ((ret = krb5_cc_resolve(kcontext, ccname, &new_cache)) != 0)
++		return ret;
++	if ((ret = ensure_parent_dir(new_cache, uid, gid)) != 0)
++		return ret;
++	if ((ret = krb5_cc_initialize(kcontext, new_cache, me)) != 0)
++		return ret;
++	if ((ret = krb5_cc_copy_creds(kcontext, *cache, new_cache)) != 0)
++		return ret;
++	if (chown(ccname + 5, uid, gid) != 0)
++		return errno;
++	krb5_cc_destroy(kcontext, *cache);
++	*cache = new_cache;
++	return 0;
++}
++#endif
++
+ static void
+ login(passwd, logincode)
+ 	char *passwd;
+@@ -1039,8 +1164,11 @@ login(passwd, logincode)
+ {
+ 	if (have_creds) {
+ #ifdef GSSAPI
+-		const char *ccname = krb5_cc_get_name(kcontext, ccache);
+-		chown(ccname, pw->pw_uid, pw->pw_gid);
++		if (make_user_ccache(&ccache, pw->pw_uid, pw->pw_gid,
++				     "ftp", getpid()) != 0) {
++			reply(550, "Can't create user credential cache.");
++			goto bad;
++		}
+ #endif
+ 	}
+ #ifdef USE_PAM
+@@ -2742,8 +2870,7 @@ ftpd_gss_convert_creds(name, creds)
+ 	if (krb5_parse_name(kcontext, name, &me))
+ 		return;
+ 
+-	snprintf(ccname, sizeof(ccname), "FILE:/tmp/krb5cc_ftpd%ld",
+-		 (long) getpid());
++	snprintf(ccname, sizeof(ccname), MCCNAME);
+ 	if (krb5_cc_resolve(kcontext, ccname, &ccache))
+ 		return;
+ 	if (krb5_cc_initialize(kcontext, ccache, me))
