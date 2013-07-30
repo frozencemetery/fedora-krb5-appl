@@ -16,7 +16,7 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.3
-Release: 4%{?dist}
+Release: 5%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.3-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
@@ -62,6 +62,7 @@ Patch89: krb5-appl-1.0.1-largefile.patch
 Patch93: krb5-appl-ftp-mdir.patch
 Patch94: krb5-appl-1.0.3-debuginfo.patch
 Patch95: krb5-appl-1.0.3-libc.patch
+Patch96: krb5-appl-cmdbuf.patch
 
 License: MIT
 URL: http://web.mit.edu/kerberos/www/
@@ -126,6 +127,7 @@ ln -s NOTICE LICENSE
 %patch93 -p1 -b .mdir
 %patch94 -p1 -b .debuginfo
 %patch95 -p1 -b .libc
+%patch96 -p1 -b .cmdbuf
 
 # Rename the man pages so that they'll get generated correctly.  Uses the
 # "krb5-appl-1.0-manpaths.txt" source file.
@@ -302,6 +304,10 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Tue Jul 30 2013 Nalin Dahyabhai <nalin@redhat.com> 1.0.3-5
+- pull up proposed change to remove the limit on the size of an input line
+  in the FTP client (based on #665833)
+
 * Tue Feb 26 2013 Nalin Dahyabhai <nalin@redhat.com> 1.0.3-4
 - link with early binding (internal tooling, #884066)
 - stop tagging profile.d scriptlets as %%config(noreplace) (more of #884066)
