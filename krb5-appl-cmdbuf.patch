@@ -1,0 +1,302 @@
+commit 03c38ad88c40baf51be91bf408b16db77a2e7628
+Author: Nalin Dahyabhai <nalin@redhat.com>
+Date:   Tue Jul 30 10:37:42 2013 -0400
+
+    Don't limit the length of an input line in FTP
+    
+    Replace static buffers and fgets() with dynamic buffers and a knockoff
+    of getline() that we'll call getinput().  Leave the limit on the number
+    of arguments in place, and make a guess that macro expansion won't
+    require more than 500 chars beyond the length of the macro definition
+    and the current command as it was entered.
+
+diff --git a/gssftp/ftp/cmds.c b/gssftp/ftp/cmds.c
+index b3be714..65d4bad 100644
+--- a/gssftp/ftp/cmds.c
++++ b/gssftp/ftp/cmds.c
+@@ -116,21 +116,26 @@ another(pargc, pargv, prompt)
+ 	char ***pargv;
+ 	char *prompt;
+ {
+-	size_t len = strlen(line);
++	ssize_t len;
++	size_t tmp_len;
++	char *tmp, *merged;
+ 	int ret;
+ 	extern sig_t intr();
+ 
+-	if (len >= sizeof(line) - 3) {
+-		printf("sorry, arguments too long\n");
+-		intr();
+-	}
+ 	printf("(%s) ", prompt);
+-	line[len++] = ' ';
+-	if (fgets(&line[len], (signed) sizeof(line) - len, stdin) == NULL)
++	tmp = NULL;
++	if ((len = getinput(&tmp, &tmp_len, stdin)) == -1)
++		intr();
++	if ((len > 0) && (tmp[len - 1] == '\n'))
++		tmp[len - 1] = '\0';
++	merged = malloc(line_len + len + 1);
++	if (merged == NULL)
+ 		intr();
+-	len += strlen(&line[len]);
+-	if (len > 0 && line[len - 1] == '\n')
+-		line[len - 1] = '\0';
++	snprintf(merged, line_len + len + 1, "%s %s", line, tmp);
++	free(line);
++	free(tmp);
++	line_len += len + 1;
++	line = merged;
+ 	makeargv();
+ 	ret = margc > *pargc;
+ 	*pargc = margc;
+diff --git a/gssftp/ftp/domacro.c b/gssftp/ftp/domacro.c
+index 92ca0a4..8af887d 100644
+--- a/gssftp/ftp/domacro.c
++++ b/gssftp/ftp/domacro.c
+@@ -39,6 +39,7 @@ static char sccsid[] = "@(#)domacro.c	1.8 (Berkeley) 9/28/90";
+ 
+ #include <stdio.h>
+ #include <signal.h>
++#include <stdlib.h>
+ 
+ #include "ftp_var.h"
+ 
+@@ -53,7 +54,8 @@ void domacro(argc, argv)
+ 	register int i, j;
+ 	register char *cp1, *cp2;
+ 	int count = 2, loopflg = 0;
+-	char line2[200];
++	char *saved;
++	size_t saved_len;
+ 	extern char **glob();
+ 	struct cmd *getcmd(), *c;
+ 
+@@ -72,8 +74,18 @@ void domacro(argc, argv)
+ 		code = -1;
+ 		return;
+ 	}
+-	(void) strncpy(line2, line, sizeof(line2) - 1);
+-	line2[sizeof(line2) - 1] = '\0';
++	saved_len = line_len;
++	saved = line;
++	line_len += (macros[i].mac_end - macros[i].mac_start + 500);
++	line = malloc(line_len);
++	if (line == NULL) {
++		printf("'%s': out of memory.\n", argv[1]);
++		line_len = saved_len;
++		line = saved;
++		code = -1;
++		return;
++	}
++	memcpy(line, saved, saved_len);
+ TOP:
+ 	cp1 = macros[i].mac_start;
+ 	while (cp1 != macros[i].mac_end) {
+@@ -94,11 +106,11 @@ TOP:
+ 				    }
+ 				    cp1--;
+ 				    if (argc - 2 >= j) {
+-                                        if(cp2 - line + strlen(argv[j+1]) < sizeof(line))
++                                        if(cp2 - line + strlen(argv[j+1]) < line_len)
+ 					(void) strncpy(cp2, argv[j+1],
+-						       sizeof(line) - 1 -
++						       line_len - 1 -
+ 						       (cp2 - line));
+-					line[sizeof(line) - 1] = '\0';
++					line[line_len - 1] = '\0';
+ 					cp2 += strlen(argv[j+1]);
+ 				    }
+ 				    break;
+@@ -107,11 +119,11 @@ TOP:
+ 					loopflg = 1;
+ 					cp1++;
+ 					if (count < argc) {
+-                                           if(cp2 - line + strlen(argv[count]) < sizeof(line))
++                                           if(cp2 - line + strlen(argv[count]) < line_len)
+ 					   (void) strncpy(cp2, argv[count],
+-							  sizeof(line) - 1 -
++							  line_len - 1 -
+ 							  (cp2 - line));
+-					   line[sizeof(line) - 1] = '\0';
++					   line[line_len - 1] = '\0';
+ 					   cp2 += strlen(argv[count]);
+ 					}
+ 					break;
+@@ -148,8 +160,7 @@ TOP:
+ 			if (bell && c->c_bell) {
+ 				(void) putchar('\007');
+ 			}
+-			(void) strncpy(line, line2, sizeof(line) - 1);
+-			line[sizeof(line) - 1] = '\0';
++			memcpy(line, saved, saved_len);
+ 			makeargv();
+ 			argc = margc;
+ 			argv = margv;
+@@ -161,4 +172,8 @@ TOP:
+ 	if (loopflg && ++count < argc) {
+ 		goto TOP;
+ 	}
++	free(line);
++	line_len = saved_len;
++	line = saved;
++	makeargv();
+ }
+diff --git a/gssftp/ftp/ftp.c b/gssftp/ftp/ftp.c
+index 813f318..d21a953 100644
+--- a/gssftp/ftp/ftp.c
++++ b/gssftp/ftp/ftp.c
+@@ -175,7 +175,7 @@ struct	sockaddr_in myctladdr;
+ #ifndef _WIN32
+ uid_t	getuid();
+ #endif
+-sig_t	lostpeer();
++sig_t	intr(), lostpeer();
+ off_t	restart_point = 0;
+ jmp_buf ptabort;
+ 
+@@ -412,7 +412,11 @@ int login(char *host)
+ 		return(1);
+ 	for (n = 0; n < macnum; ++n) {
+ 		if (!strcmp("init", macros[n].mac_name)) {
+-			(void) strlcpy(line, "$init", sizeof(line));
++			free(line);
++			line = strdup("$init");
++			if (line == NULL)
++				intr();
++			line_len = strlen(line) + 1;
+ 			makeargv();
+ 			domacro(margc, margv);
+ 			break;
+diff --git a/gssftp/ftp/ftp_var.h b/gssftp/ftp/ftp_var.h
+index e478961..646e3b3 100644
+--- a/gssftp/ftp/ftp_var.h
++++ b/gssftp/ftp/ftp_var.h
+@@ -126,9 +126,10 @@ extern struct	servent *sp;	/* service spec for tcp/ftp */
+ #include <setjmp.h>
+ extern jmp_buf	toplevel;	/* non-local goto stuff for cmd scanner */
+ 
+-extern char	line[500];	/* input line buffer */
++extern char	*line;		/* input line buffer */
++extern size_t	line_len;	/* space allocated for input line buffer */
+ extern char	*stringbase;	/* current scan point in line buffer */
+-extern char	argbuf[500];	/* argument storage buffer */
++extern char	*argbuf;	/* argument storage buffer */
+ extern char	*argbase;	/* current storage point in arg buffer */
+ extern int	margc;		/* count of arguments on input line */
+ extern char	*margv[20];	/* args parsed from input line */
+@@ -276,6 +277,7 @@ void domacro (int, char **);
+ /* main.c */
+ void help (int, char **);
+ struct cmd *getcmd (char *);
++ssize_t getinput (char **, size_t *, FILE *);
+ 
+ 
+ /* ruserpass.c */
+diff --git a/gssftp/ftp/main.c b/gssftp/ftp/main.c
+index 1b0d163..c0e9d4c 100644
+--- a/gssftp/ftp/main.c
++++ b/gssftp/ftp/main.c
+@@ -126,6 +126,9 @@ main(argc, argv)
+ 	autologin = 1;
+ 	forward = 0;
+ 	autoencrypt = 0;
++	line = NULL;
++	line_len = 0;
++	argbuf = NULL;
+ 	argc--, argv++;
+ 	while (argc > 0 && **argv == '-') {
+ 		for (cp = *argv + 1; *cp; cp++) {
+@@ -307,7 +310,7 @@ cmdscanner(top)
+ 	int top;
+ {
+ 	register struct cmd *c;
+-	register int l;
++	register ssize_t l;
+ 
+ 	if (!top)
+ 		(void) putchar('\n');
+@@ -316,20 +319,14 @@ cmdscanner(top)
+ 			printf("ftp> ");
+ 			(void) fflush(stdout);
+ 		}
+-		if (fgets(line, sizeof line, stdin) == NULL)
++		if ((l = getinput(&line, &line_len, stdin)) == -1)
+ 			quit();
+-		l = strlen(line);
+ 		if (l == 0)
+ 			break;
+ 		if (line[--l] == '\n') {
+ 			if (l == 0)
+ 				break;
+ 			line[l] = '\0';
+-		} else if (l == sizeof(line) - 2) {
+-			printf("sorry, input line too long\n");
+-			while ((l = getchar()) != '\n' && l != EOF)
+-				/* void */;
+-			break;
+ 		} /* else it was a line without a newline */
+ 		makeargv();
+ 		if (margc == 0) {
+@@ -403,6 +400,12 @@ void makeargv()
+ 	margc = 0;
+ 	argp = margv;
+ 	stringbase = line;		/* scan from first of buffer */
++	free(argbuf);
++	argbuf = malloc(line_len);
++	if (argbuf == NULL) {
++		printf("out of memory\n");
++		intr(SIGINT);
++	}
+ 	argbase = argbuf;		/* store from first of buffer */
+ 	slrflag = 0;
+ 	while ((*argp++ = slurpstring())) {
+@@ -607,3 +610,47 @@ void help(argc, argv)
+ 				c->c_name, c->c_help);
+ 	}
+ }
++
++ssize_t getinput(lineptr, lineptrlen, stream)
++	char **lineptr;
++	size_t *lineptrlen;
++	FILE *stream;
++{
++	char buf[200], *tmp;
++	ssize_t len;
++	size_t buflen;
++
++	if ((lineptr == NULL) || (lineptrlen == NULL)) {
++		errno = EINVAL;
++		return -1;
++	}
++
++	len = 0;
++	while ((tmp = fgets(buf, sizeof(buf), stream)) != NULL) {
++		buflen = strlen(buf);
++		if ((*lineptr != NULL) && (len + buflen < *lineptrlen)) {
++			strcpy(*lineptr + len, buf);
++			len += buflen;
++		} else {
++			tmp = realloc(*lineptr, len + buflen + 128);
++			if (tmp != NULL) {
++				*lineptr = tmp;
++				*lineptrlen = len + buflen + 128;
++				strcpy(*lineptr + len, buf);
++				len += buflen;
++			} else {
++				errno = ENOMEM;
++				break;
++			}
++		}
++		if ((len > 0) && ((*lineptr)[len - 1] == '\n')) {
++			break;
++		}
++	}
++
++	if (tmp == NULL) {
++		return -1;
++	}
++
++	return len;
++}
