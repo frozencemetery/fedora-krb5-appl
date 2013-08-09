@@ -16,7 +16,7 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.3
-Release: 5%{?dist}
+Release: 6%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.3-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
@@ -70,7 +70,7 @@ Group: Applications/Internet
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: autoconf, bison, flex, gawk
 BuildRequires: gzip, ncurses-devel, rsh, tar
-BuildRequires: krb5-devel, pam-devel
+BuildRequires: krb5-devel, pam-devel, systemd
 Requires: systemd-units
 Requires(post): systemd-units
 Requires(post): systemd-sysv
@@ -284,7 +284,7 @@ exit 0
 %{krb5prefix}/bin/rcp
 %{krb5prefix}/man/man1/rcp.1*
 
-/%{_unitdir}/*
+%{_unitdir}/*
 %config(noreplace) /etc/pam.d/kshell
 %config(noreplace) /etc/pam.d/ekshell
 %config(noreplace) /etc/pam.d/gssftp
@@ -304,10 +304,13 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Mon Aug  5 2013 Nalin Dahyabhai <nalin@redhat.com> 1.0.3-6
+- add buildrequires: on systemd so that macros whose definitions it provides
+  are always around
+
 * Tue Jul 30 2013 Nalin Dahyabhai <nalin@redhat.com> 1.0.3-5
 - pull up proposed change to remove the limit on the size of an input line
   in the FTP client (based on #665833)
-- make sure that the unit file path is an absolute path (build tooling)
 
 * Tue Feb 26 2013 Nalin Dahyabhai <nalin@redhat.com> 1.0.3-4
 - link with early binding (internal tooling, #884066)
