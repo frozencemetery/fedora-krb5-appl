@@ -16,11 +16,12 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.3
-Release: 6%{?dist}
+Release: 7%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.3-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
 Source1: krb5-appl-%{version}.tar.gz.asc
+Source2: README.systemd
 Source7: krb5.sh
 Source8: krb5.csh
 Source12: krsh
@@ -268,6 +269,7 @@ exit 0
 %files servers
 %defattr(-,root,root,-)
 %doc README NOTICE LICENSE
+%doc $RPM_SOURCE_DIR/README.systemd
 %docdir %{krb5prefix}/man
 
 /etc/profile.d/krb5-appl-servers.sh
@@ -304,6 +306,10 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Wed Aug 14 2013 Nalin Dahyabhai <nalin@redhat.com> 1.0.3-7
+- add some notes on how unit files are used by systemd (#906320)
+- add Documentation pointers to man pages to .service unit files
+
 * Mon Aug  5 2013 Nalin Dahyabhai <nalin@redhat.com> 1.0.3-6
 - add buildrequires: on systemd so that macros whose definitions it provides
   are always around
