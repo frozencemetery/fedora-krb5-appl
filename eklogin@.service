@@ -1,6 +1,7 @@
 [Unit]
 Description=Encrypting Kerberos-aware Rlogin Server
 After=local-fs.target
+Documentation=man:klogind(8)
 
 [Service]
 ExecStart=/usr/kerberos/sbin/klogind -e

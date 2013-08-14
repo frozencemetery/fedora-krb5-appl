@@ -1,0 +1,37 @@
+On systems where process 1 is systemd, the various listening processes
+included in this package are configured so that they can be started by
+systemd rather than the previously-used xinetd.
+
+To that end, there are two unit files included for each of the services:
+one which informs systemd about the listening socket (with a name which
+ends in ".socket", for example "klogin.socket"), and one which tells it
+which process to start to handle a new incoming connection (with a name
+which ends with ".service", for example "klogin@.service").
+
+To start (activate) a service, start its .socket unit:
+
+	systemctl start klogin.socket
+
+To have that service started automatically at boot, enable its socket:
+
+	systemctl enable klogin.socket
+
+These unit files are included in this package:
+
+Name                                        Port   Requires Encryption
+=========================================   ====   ===================
+eklogin.socket,eklogin@.service             2105   Yes
+ekrb5-telnet.socket,ekrb5-telnet@.service   23     Yes
+ekshell.socket,ekshell@.service             544    Yes
+gssftp.socket,gssftp@.service               21     No
+klogin.socket,klogin@.service               543    No
+krb5-telnet.socket,krb5-telnet@.service     23     No
+kshell.socket,kshell@.service               544    No
+
+Where two .socket files reference the same port (for example, with the
+multiple telnet servers), only one should be enabled at a time.
+
+Note that while kshell.xinetd used to specify that encryption was always
+required, we now provide both kshell.socket (encryption not required)
+and ekshell.socket (encryption always required) to make the naming
+consistent with klogin.socket and eklogin.socket.

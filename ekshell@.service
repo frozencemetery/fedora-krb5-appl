@@ -1,6 +1,7 @@
 [Unit]
 Description=Encrypted Kerberos-aware Rshell Server
 After=local-fs.target
+Documentation=man:kshd(8)
 
 [Service]
 ExecStart=/usr/kerberos/sbin/kshd -e

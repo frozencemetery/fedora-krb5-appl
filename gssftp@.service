@@ -1,6 +1,7 @@
 [Unit]
 Description=Kerberos-aware FTP Server
 After=local-fs.target
+Documentation=man:ftpd(8)
 
 [Service]
 ExecStart=/usr/kerberos/sbin/ftpd -l -a
