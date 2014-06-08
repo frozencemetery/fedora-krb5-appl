@@ -16,7 +16,7 @@
 Summary: Kerberos-aware versions of telnet, ftp, rsh, and rlogin
 Name: krb5-appl
 Version: 1.0.3
-Release: 7%{?dist}
+Release: 8%{?dist}
 # Maybe we should explode from the now-available-to-everybody tarball instead?
 # http://web.mit.edu/kerberos/dist/krb5-appl/1.0/krb5-appl-1.0.3-signed.tar
 Source0: krb5-appl-%{version}.tar.gz
@@ -306,6 +306,9 @@ exit 0
 %{krb5prefix}/man/man8/telnetd.8*
 
 %changelog
+* Sun Jun 08 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0.3-8
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
 * Wed Aug 14 2013 Nalin Dahyabhai <nalin@redhat.com> 1.0.3-7
 - add some notes on how unit files are used by systemd (#906320)
 - add Documentation pointers to man pages to .service unit files
